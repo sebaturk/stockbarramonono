@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Barra — Control de Stock</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#14120F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Barra Stock">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -354,6 +362,10 @@
     if(diff < 86400) return "hace " + Math.floor(diff/3600) + " h";
     return "hace " + Math.floor(diff/86400) + " d";
   }
+  function shortUser(email){
+    if(!email) return "";
+    return email.split("@")[0];
+  }
   function statusOf(p){
     var min = Number(p.min)||0, max = Number(p.max)||0, cur = Number(p.current)||0;
     if(max <= 0 && min <= 0) return "ok";
@@ -438,7 +450,7 @@
       var self = this;
       clearTimeout(this._writeTimers[id]);
       this._writeTimers[id] = setTimeout(function(){
-        self.updateProduct(id, { current: value, updatedAt: new Date().toISOString() });
+        self.updateProduct(id, { current: value, updatedAt: new Date().toISOString(), updatedBy: CurrentUser || null });
       }, 450);
     },
 
@@ -715,7 +727,7 @@
     row += '<span class="dot ' + s + '"></span>';
     row += '<div class="product-info">';
     row += '<div class="product-name">' + esc(p.name) + '</div>';
-    row += '<div class="product-meta">' + esc(p.provider||'—') + ' · min ' + fmtNum(p.min) + ' / max ' + fmtNum(p.max) + ' ' + esc(p.unit) + ' · ' + timeAgo(p.updatedAt) + '</div>';
+    row += '<div class="product-meta">' + esc(p.provider||'—') + ' · min ' + fmtNum(p.min) + ' / max ' + fmtNum(p.max) + ' ' + esc(p.unit) + ' · ' + timeAgo(p.updatedAt) + (p.updatedBy ? ' · ' + esc(shortUser(p.updatedBy)) : '') + '</div>';
     row += '</div>';
     row += '<div class="stepper">';
     row += '<button class="step-btn" data-step="-1" data-id="' + p.id + '">−</button>';
@@ -797,6 +809,7 @@
         if(v.orderDays && v.orderDays.length) html += '<div class="prov-line">Toma pedidos: ' + v.orderDays.map(shortDay).join(', ') + '</div>';
         if(v.deliveryDays && v.deliveryDays.length) html += '<div class="prov-line">Entrega: ' + v.deliveryDays.map(shortDay).join(', ') + '</div>';
         if(v.minOrder) html += '<div class="prov-line">Pedido mínimo: ' + esc(v.minOrder) + '</div>';
+        if(v.updatedBy) html += '<div class="prov-line faint">Última edición: ' + esc(shortUser(v.updatedBy)) + ' · ' + timeAgo(v.updatedAt) + '</div>';
         html += '</div>';
       });
     }
@@ -858,7 +871,8 @@
         min: Number(document.getElementById("f-min").value) || 0,
         max: Number(document.getElementById("f-max").value) || 0,
         current: Number(document.getElementById("f-current").value) || 0,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        updatedBy: CurrentUser || null
       };
       if(isNew){ Store.addProduct(data).then(function(){ render(); showToast("Producto agregado"); }); }
       else { Store.updateProduct(p.id, data).then(function(){ render(); showToast("Producto actualizado"); }); }
@@ -904,7 +918,9 @@
         email: document.getElementById("f-pemail").value.trim(),
         orderDays: orderDays,
         deliveryDays: deliveryDays,
-        minOrder: document.getElementById("f-pmin").value.trim()
+        minOrder: document.getElementById("f-pmin").value.trim(),
+        updatedBy: CurrentUser || null,
+        updatedAt: new Date().toISOString()
       };
       if(isNew){ Store.addProvider(data).then(function(){ render(); showToast("Proveedor agregado"); }); }
       else { Store.updateProvider(v.id, data).then(function(){ render(); showToast("Proveedor actualizado"); }); }
@@ -1129,6 +1145,12 @@
       if(e.target && e.target.id === "logout-btn"){
         firebase.auth().signOut();
       }
+    });
+  }
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(e){ console.error("SW register error", e); });
     });
   }
 
