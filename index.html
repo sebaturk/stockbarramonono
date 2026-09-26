@@ -508,6 +508,9 @@
 
   /* ============ RENDER ============ */
   var app = document.getElementById("app");
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.dataset && e.target.dataset.close !== undefined) closeModal();
+  });
 
   function render(opts){
     opts = opts || {};
@@ -874,14 +877,14 @@
         updatedAt: new Date().toISOString(),
         updatedBy: CurrentUser || null
       };
-      if(isNew){ Store.addProduct(data).then(function(){ render(); showToast("Producto agregado"); }); }
-      else { Store.updateProduct(p.id, data).then(function(){ render(); showToast("Producto actualizado"); }); }
+      if(isNew){ Store.addProduct(data).then(function(){ fullRenderWithFab(); showToast("Producto agregado"); }); }
+      else { Store.updateProduct(p.id, data).then(function(){ fullRenderWithFab(); showToast("Producto actualizado"); }); }
       closeModal();
     };
     if(!isNew){
       document.getElementById("delete-product").onclick = function(){
         if(confirm("¿Eliminar \"" + p.name + "\" del stock?")){
-          Store.deleteProduct(p.id).then(function(){ render(); showToast("Producto eliminado"); });
+          Store.deleteProduct(p.id).then(function(){ fullRenderWithFab(); showToast("Producto eliminado"); });
           closeModal();
         }
       };
@@ -922,14 +925,14 @@
         updatedBy: CurrentUser || null,
         updatedAt: new Date().toISOString()
       };
-      if(isNew){ Store.addProvider(data).then(function(){ render(); showToast("Proveedor agregado"); }); }
-      else { Store.updateProvider(v.id, data).then(function(){ render(); showToast("Proveedor actualizado"); }); }
+      if(isNew){ Store.addProvider(data).then(function(){ fullRenderWithFab(); showToast("Proveedor agregado"); }); }
+      else { Store.updateProvider(v.id, data).then(function(){ fullRenderWithFab(); showToast("Proveedor actualizado"); }); }
       closeModal();
     };
     if(!isNew){
       document.getElementById("delete-provider").onclick = function(){
         if(confirm("¿Eliminar el proveedor \"" + v.name + "\"?")){
-          Store.deleteProvider(v.id).then(function(){ render(); showToast("Proveedor eliminado"); });
+          Store.deleteProvider(v.id).then(function(){ fullRenderWithFab(); showToast("Proveedor eliminado"); });
           closeModal();
         }
       };
@@ -942,7 +945,7 @@
       btn.addEventListener("click", function(){
         State.tab = btn.dataset.tab;
         State.dashboardStatusFilter = null;
-        render();
+        fullRenderWithFab();
       });
     });
 
@@ -951,7 +954,7 @@
         State.tab = "stock";
         State.categoryFilter = "ALL";
         State.dashboardStatusFilter = el.dataset.status === "ALL" ? null : el.dataset.status;
-        render();
+        fullRenderWithFab();
       });
     });
 
@@ -960,7 +963,7 @@
       searchInput.addEventListener("input", function(){
         State.search = searchInput.value;
         var pos = searchInput.selectionStart;
-        render();
+        fullRenderWithFab();
         var again = document.getElementById("search-input");
         if(again){ again.focus(); again.setSelectionRange(pos,pos); }
       });
@@ -969,7 +972,7 @@
     document.querySelectorAll("[data-cat]").forEach(function(chip){
       chip.addEventListener("click", function(){
         State.categoryFilter = chip.dataset.cat;
-        render();
+        fullRenderWithFab();
       });
     });
 
@@ -1025,13 +1028,6 @@
         } else { fallbackCopy(text); done(); }
       });
     });
-
-    document.addEventListener("click", function(e){
-      if(e.target && e.target.dataset && e.target.dataset.close !== undefined) closeModal();
-    }, { once:false });
-
-    var fab = document.getElementById("fab-add");
-    if(fab) fab.addEventListener("click", function(){ editProductModal(null); });
   }
 
   function fallbackCopy(text){
