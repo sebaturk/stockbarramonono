@@ -33,6 +33,8 @@
     --pronto-bg: rgba(238, 175, 62, 0.14);
     --ok: #4EAE79;
     --ok-bg: rgba(78, 174, 121, 0.13);
+    --camino: #5B9BE6;
+    --camino-bg: rgba(91, 155, 230, 0.15);
     --radius: 14px;
     --radius-sm: 9px;
     box-sizing: border-box;
@@ -109,6 +111,7 @@
   .stat-card.urgent .stat-num { color: var(--urgent); }
   .stat-card.pronto .stat-num { color: var(--pronto); }
   .stat-card.ok .stat-num { color: var(--ok); }
+  .stat-card.camino .stat-num { color: var(--camino); }
 
   .section-title {
     font-size: 13px; text-transform: none; color: var(--text-muted);
@@ -136,6 +139,7 @@
   .dot.urgent { background: var(--urgent); }
   .dot.pronto { background: var(--pronto); }
   .dot.ok { background: var(--ok); }
+  .dot.camino { background: var(--camino); }
 
   .product-info { flex: 1; min-width: 0; }
   .product-name { font-size: 14.5px; font-weight: 600; color: var(--text); }
@@ -214,6 +218,35 @@
   .badge.urgent { background: var(--urgent-bg); color: var(--urgent); }
   .badge.pronto { background: var(--pronto-bg); color: var(--pronto); }
   .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.camino { background: var(--camino-bg); color: var(--camino); }
+
+  /* ---------- Estado En camino / Recibido ---------- */
+  .chip-count { opacity: .65; font-weight: 500; margin-left: 3px; }
+  .chip.active.s-camino { background: var(--camino); border-color: var(--camino); color: #07121F; }
+  .chip.active.s-urgent { background: var(--urgent); border-color: var(--urgent); color: #fff; }
+  .chip.active.s-pronto { background: var(--pronto); border-color: var(--pronto); color: #1F1503; }
+  .chip.active.s-ok { background: var(--ok); border-color: var(--ok); color: #07170E; }
+  .camino-line { display: flex; align-items: center; gap: 8px; margin-top: 7px; flex-wrap: wrap; }
+  .recv-btn {
+    font-size: 12px; font-weight: 700; color: var(--camino); background: var(--camino-bg);
+    border: 1px solid rgba(91,155,230,.45); padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  }
+  .recv-btn:active { background: rgba(91,155,230,.3); }
+  .undo-btn {
+    font-size: 11.5px; font-weight: 600; color: var(--text-faint); background: transparent;
+    border: none; padding: 5px 4px; cursor: pointer; text-decoration: underline;
+  }
+  .pedido-check { display: flex; align-items: center; margin-right: 10px; flex-shrink: 0; cursor: pointer; }
+  .pedido-check input { width: 19px; height: 19px; accent-color: var(--accent); cursor: pointer; }
+  .pedido-row.unchecked .pedido-info, .pedido-row.unchecked .pedido-side { opacity: .45; }
+  .pedido-info { flex: 1; min-width: 0; }
+  .mark-btn {
+    width: 100%; margin-top: 8px; padding: 11px 14px; border-radius: var(--radius-sm);
+    border: 1px solid rgba(91,155,230,.5); background: var(--camino-bg); color: var(--camino);
+    font-size: 13.5px; font-weight: 700; cursor: pointer;
+  }
+  .mark-btn:disabled { opacity: .4; cursor: default; }
+  .section-title.camino { color: var(--camino); }
 
   /* ---------- Proveedores ---------- */
   .prov-card {
@@ -367,13 +400,14 @@
     return email.split("@")[0];
   }
   function statusOf(p){
+    if(p.ordered) return "camino";
     var min = Number(p.min)||0, max = Number(p.max)||0, cur = Number(p.current)||0;
     if(max <= 0 && min <= 0) return "ok";
     if(cur < min) return "urgent";
     if(cur <= min * 1.2) return "pronto";
     return "ok";
   }
-  var STATUS_LABEL = { urgent: "Urgente", pronto: "Por pedir pronto", ok: "OK" };
+  var STATUS_LABEL = { urgent: "Urgente", pronto: "Por pedir pronto", camino: "En camino", ok: "OK" };
 
   /* ============ STORE (Firebase Firestore) ============ */
   var Store = {
@@ -495,7 +529,8 @@
     tab: "dashboard",
     search: "",
     categoryFilter: "ALL",
-    dashboardStatusFilter: null
+    dashboardStatusFilter: null,
+    orderUnchecked: {}
   };
 
   function showToast(msg){
@@ -526,12 +561,12 @@
   }
 
   function counts(){
-    var u=0,p=0,o=0;
+    var u=0,p=0,o=0,c=0;
     Store.products.forEach(function(prod){
       var s = statusOf(prod);
-      if(s==="urgent") u++; else if(s==="pronto") p++; else o++;
+      if(s==="urgent") u++; else if(s==="pronto") p++; else if(s==="camino") c++; else o++;
     });
-    return { urgent:u, pronto:p, ok:o, total: Store.products.length };
+    return { urgent:u, pronto:p, camino:c, ok:o, total: Store.products.length };
   }
 
   function updateLiveCounts(){
@@ -540,8 +575,10 @@
     var elP = document.getElementById("cnt-pronto");
     var elO = document.getElementById("cnt-ok");
     var elT = document.getElementById("cnt-total");
+    var elC = document.getElementById("cnt-camino");
     if(elU) elU.textContent = c.urgent;
     if(elP) elP.textContent = c.pronto;
+    if(elC) elC.textContent = c.camino;
     if(elO) elO.textContent = c.ok;
     if(elT) elT.textContent = c.total;
     var navBadge = document.getElementById("pedidos-badge");
@@ -628,8 +665,9 @@
     html += '<div class="stat-grid">';
     html += '<div class="stat-card urgent" data-goto="stock" data-status="urgent"><div class="stat-num" id="cnt-urgent">'+c.urgent+'</div><div class="stat-label">Urgente</div></div>';
     html += '<div class="stat-card pronto" data-goto="stock" data-status="pronto"><div class="stat-num" id="cnt-pronto">'+c.pronto+'</div><div class="stat-label">Por pedir pronto</div></div>';
+    html += '<div class="stat-card camino" data-goto="stock" data-status="camino"><div class="stat-num" id="cnt-camino">'+c.camino+'</div><div class="stat-label">En camino</div></div>';
     html += '<div class="stat-card ok" data-goto="stock" data-status="ok"><div class="stat-num" id="cnt-ok">'+c.ok+'</div><div class="stat-label">OK</div></div>';
-    html += '<div class="stat-card" data-goto="stock" data-status="ALL"><div class="stat-num" id="cnt-total">'+c.total+'</div><div class="stat-label">Productos totales</div></div>';
+    html += '<div class="stat-card" style="grid-column:1 / -1;" data-goto="stock" data-status="ALL"><div class="stat-num" id="cnt-total">'+c.total+'</div><div class="stat-label">Productos totales</div></div>';
     html += '</div>';
 
     if(anyOrderDaysConfigured()){
@@ -686,7 +724,15 @@
     var html = '';
     html += '<div class="search-wrap">';
     html += '<input class="search-input" id="search-input" placeholder="Buscar producto…" value="' + esc(State.search) + '">';
+    var sc = counts();
+    var activeS = State.dashboardStatusFilter || "ALL";
+    var sOpts = [["ALL","Todos",sc.total],["urgent","Urgente",sc.urgent],["pronto","Por pedir",sc.pronto],["camino","En camino",sc.camino],["ok","OK",sc.ok]];
     html += '<div class="chips">';
+    sOpts.forEach(function(o){
+      html += '<button class="chip s-' + o[0] + ' ' + (activeS===o[0]?'active':'') + '" data-sfilter="' + o[0] + '">' + o[1] + '<span class="chip-count">' + o[2] + '</span></button>';
+    });
+    html += '</div>';
+    html += '<div class="chips" style="padding-top:6px;">';
     cats.forEach(function(c){
       var label = c === "ALL" ? "Todas" : c.charAt(0) + c.slice(1).toLowerCase();
       html += '<button class="chip ' + (State.categoryFilter===c?"active":"") + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
@@ -731,6 +777,10 @@
     row += '<div class="product-info">';
     row += '<div class="product-name">' + esc(p.name) + '</div>';
     row += '<div class="product-meta">' + esc(p.provider||'—') + ' · min ' + fmtNum(p.min) + ' / max ' + fmtNum(p.max) + ' ' + esc(p.unit) + ' · ' + timeAgo(p.updatedAt) + (p.updatedBy ? ' · ' + esc(shortUser(p.updatedBy)) : '') + '</div>';
+    if(p.ordered){
+      row += '<div class="camino-line"><span class="badge camino">En camino' + (p.orderedQty ? ' · +' + fmtNum(p.orderedQty) : '') + '</span>' +
+        '<button class="recv-btn" data-receive="' + p.id + '">📦 Recibido</button></div>';
+    }
     row += '</div>';
     row += '<div class="stepper">';
     row += '<button class="step-btn" data-step="-1" data-id="' + p.id + '">−</button>';
@@ -747,40 +797,81 @@
   /* ---- Pedidos sugeridos ---- */
   function pedidosHtml(){
     var need = Store.products.filter(function(p){ var s = statusOf(p); return s==="urgent" || s==="pronto"; });
-    if(need.length === 0){
+    var ordered = Store.products.filter(function(p){ return p.ordered; });
+    if(need.length === 0 && ordered.length === 0){
       return '<div class="empty-note">Todo en orden. No hay pedidos sugeridos por ahora 🎉</div>';
     }
-    var byProv = {};
-    var order = [];
-    need.forEach(function(p){
-      var prov = p.provider || "Sin proveedor";
-      if(!byProv[prov]){ byProv[prov] = []; order.push(prov); }
-      byProv[prov].push(p);
-    });
-    order.sort(function(a,b){ return a.localeCompare(b); });
-
     var html = '';
     var today = todayName();
-    order.forEach(function(prov){
-      var items = byProv[prov].sort(function(a,b){ return statusOf(a)==="urgent" ? -1 : 1; });
-      var provData = Store.providers.find(function(v){ return v.name === prov; });
-      var takesToday = provData && provData.orderDays && provData.orderDays.indexOf(today) !== -1;
-      html += '<div class="provider-group">';
-      html += '<div class="provider-head"><span class="provider-name">' + esc(prov) + (takesToday ? ' <span class="badge ok">🔔 hoy</span>' : '') + '</span>';
-      html += '<button class="copy-btn" data-copy-provider="' + esc(prov) + '">Copiar pedido</button></div>';
-      html += '<div class="card">';
-      items.forEach(function(p,i){
-        var qty = Math.max(Number(p.max) - Number(p.current), 0);
-        var s = statusOf(p);
-        html += '<div class="pedido-row" style="' + (i<items.length-1?'':'border-bottom:none;') + '">';
-        html += '<div><div style="font-weight:600;">' + esc(p.name) + '</div><div class="faint" style="font-size:12px;">actual ' + fmtNum(p.current) + ' ' + esc(p.unit) + ' · mín ' + fmtNum(p.min) + '</div></div>';
-        html += '<div style="text-align:right;display:flex;align-items:center;gap:8px;">';
-        html += '<span class="badge ' + s + '">' + STATUS_LABEL[s] + '</span>';
-        html += '<span class="pedido-qty">+' + fmtNum(qty) + '</span>';
+
+    if(need.length === 0){
+      html += '<div class="card empty-note" style="padding:16px;margin-top:6px;">No hay productos pendientes de pedir 🎉</div>';
+    } else {
+      var byProv = {};
+      var order = [];
+      need.forEach(function(p){
+        var prov = p.provider || "Sin proveedor";
+        if(!byProv[prov]){ byProv[prov] = []; order.push(prov); }
+        byProv[prov].push(p);
+      });
+      order.sort(function(a,b){ return a.localeCompare(b); });
+
+      order.forEach(function(prov){
+        var items = byProv[prov].sort(function(a,b){ return statusOf(a)==="urgent" ? -1 : 1; });
+        var provData = Store.providers.find(function(v){ return v.name === prov; });
+        var takesToday = provData && provData.orderDays && provData.orderDays.indexOf(today) !== -1;
+        var selected = items.filter(function(p){ return !State.orderUnchecked[p.id]; }).length;
+        html += '<div class="provider-group">';
+        html += '<div class="provider-head"><span class="provider-name">' + esc(prov) + (takesToday ? ' <span class="badge ok">🔔 hoy</span>' : '') + '</span>';
+        html += '<button class="copy-btn" data-copy-provider="' + esc(prov) + '">Copiar pedido</button></div>';
+        html += '<div class="card">';
+        items.forEach(function(p,i){
+          var qty = Math.max(Number(p.max) - Number(p.current), 0);
+          var s = statusOf(p);
+          var checked = !State.orderUnchecked[p.id];
+          html += '<div class="pedido-row' + (checked ? '' : ' unchecked') + '" style="' + (i<items.length-1?'':'border-bottom:none;') + '">';
+          html += '<label class="pedido-check"><input type="checkbox" data-sel="' + p.id + '"' + (checked ? ' checked' : '') + ' aria-label="Incluir ' + esc(p.name) + ' en el pedido"></label>';
+          html += '<div class="pedido-info"><div style="font-weight:600;">' + esc(p.name) + '</div><div class="faint" style="font-size:12px;">actual ' + fmtNum(p.current) + ' ' + esc(p.unit) + ' · mín ' + fmtNum(p.min) + '</div></div>';
+          html += '<div class="pedido-side" style="text-align:right;display:flex;align-items:center;gap:8px;">';
+          html += '<span class="badge ' + s + '">' + STATUS_LABEL[s] + '</span>';
+          html += '<span class="pedido-qty">+' + fmtNum(qty) + '</span>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+        html += '<button class="mark-btn" data-mark-provider="' + esc(prov) + '"' + (selected===0 ? ' disabled' : '') + '>' +
+          (selected===0 ? 'Marcar como pedido' : 'Marcar como pedido (' + selected + ')') + '</button>';
+        html += '</div>';
+      });
+    }
+
+    if(ordered.length > 0){
+      var oByProv = {};
+      var oOrder = [];
+      ordered.forEach(function(p){
+        var prov = p.provider || "Sin proveedor";
+        if(!oByProv[prov]){ oByProv[prov] = []; oOrder.push(prov); }
+        oByProv[prov].push(p);
+      });
+      oOrder.sort(function(a,b){ return a.localeCompare(b); });
+      html += '<div class="section-title camino">En camino · ' + ordered.length + '</div>';
+      oOrder.forEach(function(prov){
+        var items = oByProv[prov].sort(function(a,b){ return String(a.orderedAt||"").localeCompare(String(b.orderedAt||"")); });
+        html += '<div class="provider-group">';
+        html += '<div class="provider-head"><span class="provider-name">' + esc(prov) + '</span></div>';
+        html += '<div class="card">';
+        items.forEach(function(p,i){
+          html += '<div class="pedido-row" style="' + (i<items.length-1?'':'border-bottom:none;') + '">';
+          html += '<div class="pedido-info"><div style="font-weight:600;">' + esc(p.name) + '</div>' +
+            '<div class="faint" style="font-size:12px;">' + (p.orderedQty ? 'pedido +' + fmtNum(p.orderedQty) + ' ' + esc(p.unit) + ' · ' : '') +
+            timeAgo(p.orderedAt) + (p.orderedBy ? ' · ' + esc(shortUser(p.orderedBy)) : '') + '</div></div>';
+          html += '<div class="pedido-side" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">';
+          html += '<button class="recv-btn" data-receive="' + p.id + '">📦 Recibido</button>';
+          html += '<button class="undo-btn" data-unorder="' + p.id + '">deshacer</button>';
+          html += '</div></div>';
+        });
         html += '</div></div>';
       });
-      html += '</div></div>';
-    });
+    }
     return html;
   }
 
@@ -891,6 +982,50 @@
     }
   }
 
+  function receiveModal(id){
+    var p = Store.products.find(function(x){ return x.id === id; });
+    if(!p) return;
+    var expected = Number(p.orderedQty) || 0;
+    var html = '<button class="close-x" data-close>✕</button>';
+    html += '<div class="sheet-title">Recibir pedido</div>';
+    html += '<div style="font-size:15px;font-weight:600;">' + esc(p.name) + '</div>';
+    html += '<div class="faint" style="font-size:12.5px;margin:3px 0 16px;">' + esc(p.provider||'—') + ' · Stock actual ' + fmtNum(p.current) + ' ' + esc(p.unit) + (expected ? ' · Pedido +' + fmtNum(expected) : '') + '</div>';
+    html += '<div class="field"><label>¿Cuántas unidades llegaron?</label><input id="f-recv" type="number" inputmode="decimal" min="0" value="' + (expected ? fmtNum(expected) : '') + '"></div>';
+    html += '<div id="recv-preview" class="muted" style="font-size:13px;min-height:18px;"></div>';
+    html += '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="confirm-recv">Confirmar recepción</button></div>';
+    openModal(html);
+
+    var input = document.getElementById("f-recv");
+    var prev = document.getElementById("recv-preview");
+    function round2(n){ return Math.round(n * 100) / 100; }
+    function updatePreview(){
+      if(input.value === "" || isNaN(Number(input.value))){ prev.textContent = ""; return; }
+      prev.innerHTML = 'Nuevo stock: <b style="color:var(--text);">' + fmtNum(round2((Number(p.current)||0) + Number(input.value))) + ' ' + esc(p.unit) + '</b>';
+    }
+    input.addEventListener("input", updatePreview);
+    updatePreview();
+    input.focus(); input.select();
+
+    function confirmReceive(){
+      if(input.value === "" || isNaN(Number(input.value))){ showToast("Ingresá la cantidad recibida"); return; }
+      var qty = Number(input.value);
+      if(qty < 0){ showToast("La cantidad no puede ser negativa"); return; }
+      var fresh = Store.products.find(function(x){ return x.id === id; });
+      if(!fresh){ closeModal(); return; }
+      var newCur = round2((Number(fresh.current)||0) + qty);
+      Store.updateProduct(id, {
+        current: newCur,
+        ordered: false, orderedQty: null, orderedAt: null, orderedBy: null,
+        updatedAt: new Date().toISOString(), updatedBy: CurrentUser || null
+      });
+      closeModal();
+      fullRenderWithFab();
+      showToast(fresh.name + ": stock " + fmtNum(newCur) + " " + (fresh.unit || ""));
+    }
+    document.getElementById("confirm-recv").onclick = confirmReceive;
+    input.addEventListener("keydown", function(e){ if(e.key === "Enter") confirmReceive(); });
+  }
+
   function editProviderModal(v){
     var isNew = !v;
     v = v || { name:"", contact:"", phone:"", email:"", orderDays:[], deliveryDays:[], minOrder:"" };
@@ -969,6 +1104,13 @@
       });
     }
 
+    document.querySelectorAll("[data-sfilter]").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        State.dashboardStatusFilter = chip.dataset.sfilter === "ALL" ? null : chip.dataset.sfilter;
+        fullRenderWithFab();
+      });
+    });
+
     document.querySelectorAll("[data-cat]").forEach(function(chip){
       chip.addEventListener("click", function(){
         State.categoryFilter = chip.dataset.cat;
@@ -1009,6 +1151,52 @@
       card.addEventListener("click", function(){
         var v = Store.providers.find(function(x){ return x.id === card.dataset.editProvider; });
         editProviderModal(v);
+      });
+    });
+
+    document.querySelectorAll("[data-sel]").forEach(function(box){
+      box.addEventListener("change", function(){
+        if(box.checked) delete State.orderUnchecked[box.dataset.sel];
+        else State.orderUnchecked[box.dataset.sel] = true;
+        var row = box.closest(".pedido-row");
+        if(row) row.classList.toggle("unchecked", !box.checked);
+        var group = box.closest(".provider-group");
+        var btn = group && group.querySelector("[data-mark-provider]");
+        if(btn){
+          var n = group.querySelectorAll("[data-sel]:checked").length;
+          btn.disabled = n === 0;
+          btn.textContent = n === 0 ? "Marcar como pedido" : "Marcar como pedido (" + n + ")";
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-mark-provider]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var group = btn.closest(".provider-group");
+        var ids = Array.prototype.slice.call(group.querySelectorAll("[data-sel]:checked")).map(function(b){ return b.dataset.sel; });
+        if(ids.length === 0) return;
+        var iso = new Date().toISOString();
+        ids.forEach(function(id){
+          var prod = Store.products.find(function(x){ return x.id === id; });
+          if(!prod) return;
+          var qty = Math.max((Number(prod.max)||0) - (Number(prod.current)||0), 0);
+          delete State.orderUnchecked[id];
+          Store.updateProduct(id, { ordered: true, orderedQty: qty, orderedAt: iso, orderedBy: CurrentUser || null });
+        });
+        fullRenderWithFab();
+        showToast(ids.length + (ids.length === 1 ? " producto marcado" : " productos marcados") + " como pedido");
+      });
+    });
+
+    document.querySelectorAll("[data-receive]").forEach(function(btn){
+      btn.addEventListener("click", function(){ receiveModal(btn.dataset.receive); });
+    });
+
+    document.querySelectorAll("[data-unorder]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        Store.updateProduct(btn.dataset.unorder, { ordered: false, orderedQty: null, orderedAt: null, orderedBy: null });
+        fullRenderWithFab();
+        showToast("Se quitó la marca \"En camino\"");
       });
     });
 
