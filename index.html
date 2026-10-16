@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Barra — Control de Stock</title>
+<title>Monono — Bar Management</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#14120F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Barra Stock">
+<meta name="apple-mobile-web-app-title" content="Monono Stock">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,9 +24,9 @@
     --text: #F1EAE0;
     --text-muted: #9C9284;
     --text-faint: #6E6659;
-    --accent: #5FA093;
-    --accent-dim: #3E6D64;
-    --accent-text: #0D1512;
+    --accent: #E8575A;
+    --accent-dim: #8E2F31;
+    --accent-text: #1A0808;
     --urgent: #E2564E;
     --urgent-bg: rgba(226, 86, 78, 0.14);
     --pronto: #EEAF3E;
@@ -266,12 +266,15 @@
   .sheet {
     width: 100%; max-width: 640px; background: var(--surface); border: 1px solid var(--border);
     border-bottom: none; border-radius: 20px 20px 0 0; padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 22px);
-    max-height: 88vh; overflow-y: auto;
+    max-height: 88vh; overflow-y: auto; position: relative;
   }
+  .overlay.full { align-items: stretch; }
+  .sheet.full { max-width: 640px; height: 100%; max-height: 100%; border-radius: 0; border: none; }
   .sheet-title { font-size: 18px; margin-bottom: 14px; }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-  .field input, .field select {
+  .field input, .field select, .field textarea {
+    font-family: inherit;
     width: 100%; padding: 11px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
     background: var(--surface-2); color: var(--text); font-size: 14.5px;
   }
@@ -293,6 +296,46 @@
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
   .sync-pill.local .sync-dot { background: var(--pronto); }
   .sync-pill.cloud .sync-dot { background: var(--ok); }
+
+  /* ---------- Nota de pedido ---------- */
+  .nl { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; }
+  .nl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .nl-x { background: none; border: none; color: var(--text-faint); font-size: 16px; cursor: pointer; padding: 2px 6px; }
+  .nl-fields { display: grid; grid-template-columns: .8fr 1.2fr 1fr; gap: 8px; margin-top: 10px; }
+  .nl-fields label { font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; }
+  .nl-fields input {
+    width: 100%; margin-top: 4px; padding: 9px 8px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-size: 14.5px; font-family: inherit;
+  }
+  .nl-sub { text-align: right; font-size: 12.5px; color: var(--text-muted); margin-top: 8px; }
+
+  .nota-paper { background: #fff; color: #111; border-radius: 10px; padding: 18px 16px; font-family: "Inter", Arial, sans-serif; font-size: 13px; line-height: 1.45; }
+  .nota-head { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 12px; }
+  .nota-title { font-weight: 800; font-size: 18px; }
+  .nota-biz { font-size: 13px; color: #444; margin-top: 2px; }
+  .nota-folio { text-align: right; font-weight: 800; font-size: 16px; }
+  .nota-folio small { display: block; font-weight: 500; color: #555; font-size: 12px; }
+  .nota-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin-bottom: 12px; }
+  .nota-meta span { display: block; font-size: 10.5px; color: #666; }
+  .nota-meta b { font-size: 13px; }
+  .nota-table { width: 100%; border-collapse: collapse; }
+  .nota-table th { text-align: left; font-size: 11px; color: #555; border-bottom: 1px solid #999; padding: 5px 4px; font-weight: 600; }
+  .nota-table td { padding: 7px 4px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .nota-table .num { text-align: right; white-space: nowrap; }
+  .nota-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; padding: 10px 4px 4px; border-top: 2px solid #111; }
+  .nota-pay { margin-top: 10px; padding: 8px 10px; border: 2px solid #111; font-weight: 800; text-align: center; }
+  .nota-pay.soft { border: 1px solid #999; font-weight: 600; }
+  .nota-notes { margin-top: 10px; font-size: 12.5px; white-space: pre-wrap; }
+  .nota-void { color: #B00020; border: 2px solid #B00020; font-weight: 800; text-align: center; padding: 6px; margin-bottom: 10px; }
+
+  #print-root { display: none; }
+  @media print {
+    @page { margin: 14mm; }
+    html, body { background: #fff !important; height: auto !important; }
+    body > * { display: none !important; }
+    body > #print-root { display: block !important; }
+    #print-root .nota-paper { padding: 0; border-radius: 0; font-size: 12.5pt; }
+  }
 
   /* ---------- Login ---------- */
   .login-screen {
@@ -347,7 +390,7 @@
 
 <div id="login-screen" class="login-screen">
   <div class="login-card" id="login-card">
-    <h1 class="brand">Barra <span>Stock</span></h1>
+    <h1 class="brand">Monono <span>Stock</span></h1>
     <div class="brand-sub">Iniciá sesión para continuar</div>
     <div id="login-loading" class="login-loading">Conectando…</div>
   </div>
@@ -378,6 +421,45 @@
     return map[new Date().getDay()];
   }
   function shortDay(d){ return (d||"").slice(0,3); }
+
+  /* ---- Nota de pedido: constantes y helpers ---- */
+  var BUSINESS_NAME = "Monono";
+  var DEFAULT_COUNTRY_CODE = "52"; // se antepone a teléfonos de 10 dígitos para armar el link de WhatsApp
+  var JS_DAYS = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  var PAYMENT_OPTS = [["contraentrega","Contra entrega"],["anticipado","Pago anticipado"],["credito","Crédito / a plazo"]];
+  var TYPE_SUGGESTIONS = ["botella","caja","pieza","paquete","bolsa","kg","litro","galón","lata","garrafón","ML","GR"];
+  function payLabel(code){
+    var f = PAYMENT_OPTS.filter(function(o){ return o[0] === code; })[0];
+    return f ? f[1] : "Contra entrega";
+  }
+  function payOptionsHtml(sel){
+    return PAYMENT_OPTS.map(function(o){ return '<option value="' + o[0] + '"' + (o[0]===sel ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+  }
+  function round2(n){ return Math.round(Number(n) * 100) / 100; }
+  function fmtQty(n){ return String(round2(n)); }
+  function money(n){ return "$" + Number(n||0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  function ymd(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
+  function fmtDMY(d){ return pad2(d.getDate()) + "/" + pad2(d.getMonth()+1) + "/" + d.getFullYear(); }
+  function parseYMD(s){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+  function fmtDayDate(s){ var d = parseYMD(s); return d ? JS_DAYS[d.getDay()] + " " + fmtDMY(d) : "—"; }
+  function orderDateObj(o){ return parseYMD(o.noteDate) || new Date(o.createdAt); }
+  function orderRequester(o){ return o.requestedBy || shortUser(o.createdBy) || "—"; }
+  function nextDeliveryDate(prov){
+    var days = (prov && prov.deliveryDays) || [];
+    if(!days.length) return "";
+    var now = new Date();
+    for(var i = 1; i <= 7; i++){
+      var c = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      if(days.indexOf(JS_DAYS[c.getDay()]) !== -1) return ymd(c);
+    }
+    return "";
+  }
+  function normUnit(s){
+    s = (s || "").toString().trim().toLowerCase();
+    if(s === "pz" || s === "pza" || s === "pzas" || s === "piezas") return "pieza";
+    return s;
+  }
 
   function slug(s){
     return s.toString().toLowerCase()
@@ -413,9 +495,11 @@
   var Store = {
     products: [],
     providers: [],
+    orders: [],
     _db: null,
     _unsubP: null,
     _unsubV: null,
+    _unsubO: null,
     _writeTimers: {},
 
     async init(onChange){
@@ -461,12 +545,17 @@
         self.providers = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
         self.onChange();
       }, function(err){ console.error("providers sub error", err); });
+      this._unsubO = this._db.collection("orders").onSnapshot(function(qs){
+        self.orders = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+        self.onChange();
+      }, function(err){ console.error("orders sub error", err); });
     },
 
     unsubscribe(){
       if(this._unsubP){ this._unsubP(); this._unsubP = null; }
       if(this._unsubV){ this._unsubV(); this._unsubV = null; }
-      this.products = []; this.providers = [];
+      if(this._unsubO){ this._unsubO(); this._unsubO = null; }
+      this.products = []; this.providers = []; this.orders = [];
     },
 
     async updateProduct(id, data){
@@ -502,6 +591,53 @@
       try { await this._db.collection("products").doc(id).delete(); } catch(e){ console.error(e); }
     },
 
+    async nextFolio(){
+      var db = this._db;
+      try {
+        var ref = db.collection("meta").doc("counters");
+        var n = await db.runTransaction(function(tx){
+          return tx.get(ref).then(function(doc){
+            var cur = (doc.exists && doc.data().orderSeq) || 0;
+            var next = cur + 1;
+            tx.set(ref, { orderSeq: next }, { merge: true });
+            return next;
+          });
+        });
+        return "NP-" + String(n).padStart(4, "0");
+      } catch(e){
+        console.error("folio error", e);
+        var d = new Date();
+        return "NP-" + String(d.getFullYear()).slice(2) + pad2(d.getMonth()+1) + pad2(d.getDate()) + "-" + pad2(d.getHours()) + pad2(d.getMinutes());
+      }
+    },
+
+    async resetOrders(){
+      var db = this._db, ids = this.orders.map(function(o){ return o.id; });
+      for(var i = 0; i < ids.length; i++){ await db.collection("orders").doc(ids[i]).delete(); }
+      await db.collection("meta").doc("counters").set({ orderSeq: 0 }, { merge: true });
+      this.orders = [];
+      var self = this;
+      this.products.filter(function(p){ return p.orderedFolio; }).forEach(function(p){
+        self.updateProduct(p.id, { ordered: false, orderedQty: null, orderedAt: null, orderedBy: null, orderedLabel: null, orderedFolio: null });
+      });
+      this.onChange();
+    },
+
+    async createOrder(order){
+      var id = "o" + uid();
+      this.orders.push(Object.assign({ id: id }, order));
+      try { await this._db.collection("orders").doc(id).set(Object.assign({}, order)); }
+      catch(e){ this.orders = this.orders.filter(function(x){ return x.id !== id; }); throw e; }
+      return id;
+    },
+
+    async updateOrder(id, data){
+      var o = this.orders.find(function(x){ return x.id === id; });
+      if(o) Object.assign(o, data);
+      this.onChange();
+      try { await this._db.collection("orders").doc(id).update(data); } catch(e){ console.error(e); }
+    },
+
     async addProvider(data){
       var id = slug(data.name) + "-" + uid().slice(-4);
       var doc = Object.assign({ id: id }, data);
@@ -530,7 +666,9 @@
     search: "",
     categoryFilter: "ALL",
     dashboardStatusFilter: null,
-    orderUnchecked: {}
+    orderUnchecked: {},
+    pedidosView: "pendientes",
+    notasFilter: "unpaid"
   };
 
   function showToast(msg){
@@ -596,8 +734,8 @@
     '<div class="topbar">' +
       '<div class="topbar-row">' +
         '<div>' +
-          '<h1 class="brand">Barra <span>Stock</span></h1>' +
-          '<div class="brand-sub">Control de inventario</div>' +
+          '<h1 class="brand">Monono <span>Stock</span></h1>' +
+          '<div class="brand-sub">Bar management</div>' +
         '</div>' +
         '<button class="logout-btn" id="logout-btn" title="Cerrar sesión">⎋</button>' +
       '</div>' +
@@ -778,7 +916,7 @@
     row += '<div class="product-name">' + esc(p.name) + '</div>';
     row += '<div class="product-meta">' + esc(p.provider||'—') + ' · min ' + fmtNum(p.min) + ' / max ' + fmtNum(p.max) + ' ' + esc(p.unit) + ' · ' + timeAgo(p.updatedAt) + (p.updatedBy ? ' · ' + esc(shortUser(p.updatedBy)) : '') + '</div>';
     if(p.ordered){
-      row += '<div class="camino-line"><span class="badge camino">En camino' + (p.orderedQty ? ' · +' + fmtNum(p.orderedQty) : '') + '</span>' +
+      row += '<div class="camino-line"><span class="badge camino">En camino' + (p.orderedLabel ? ' · ' + esc(p.orderedLabel) : (p.orderedQty ? ' · +' + fmtNum(p.orderedQty) : '')) + '</span>' +
         '<button class="recv-btn" data-receive="' + p.id + '">📦 Recibido</button></div>';
     }
     row += '</div>';
@@ -796,12 +934,14 @@
 
   /* ---- Pedidos sugeridos ---- */
   function pedidosHtml(){
+    var head = pedidosHeadHtml();
+    if(State.pedidosView === "notas") return head + notasHtml();
     var need = Store.products.filter(function(p){ var s = statusOf(p); return s==="urgent" || s==="pronto"; });
     var ordered = Store.products.filter(function(p){ return p.ordered; });
     if(need.length === 0 && ordered.length === 0){
-      return '<div class="empty-note">Todo en orden. No hay pedidos sugeridos por ahora 🎉</div>';
+      return head + '<div class="empty-note">Todo en orden. No hay pedidos sugeridos por ahora 🎉</div>';
     }
-    var html = '';
+    var html = head;
     var today = todayName();
 
     if(need.length === 0){
@@ -823,7 +963,7 @@
         var selected = items.filter(function(p){ return !State.orderUnchecked[p.id]; }).length;
         html += '<div class="provider-group">';
         html += '<div class="provider-head"><span class="provider-name">' + esc(prov) + (takesToday ? ' <span class="badge ok">🔔 hoy</span>' : '') + '</span>';
-        html += '<button class="copy-btn" data-copy-provider="' + esc(prov) + '">Copiar pedido</button></div>';
+        html += '<button class="copy-btn" data-nota-provider="' + esc(prov) + '">📝 Nota de pedido</button></div>';
         html += '<div class="card">';
         items.forEach(function(p,i){
           var qty = Math.max(Number(p.max) - Number(p.current), 0);
@@ -862,8 +1002,8 @@
         items.forEach(function(p,i){
           html += '<div class="pedido-row" style="' + (i<items.length-1?'':'border-bottom:none;') + '">';
           html += '<div class="pedido-info"><div style="font-weight:600;">' + esc(p.name) + '</div>' +
-            '<div class="faint" style="font-size:12px;">' + (p.orderedQty ? 'pedido +' + fmtNum(p.orderedQty) + ' ' + esc(p.unit) + ' · ' : '') +
-            timeAgo(p.orderedAt) + (p.orderedBy ? ' · ' + esc(shortUser(p.orderedBy)) : '') + '</div></div>';
+            '<div class="faint" style="font-size:12px;">' + (p.orderedLabel ? 'pedido ' + esc(p.orderedLabel) + ' · ' : (p.orderedQty ? 'pedido +' + fmtNum(p.orderedQty) + ' ' + esc(p.unit) + ' · ' : '')) +
+            (p.orderedFolio ? esc(p.orderedFolio) + ' · ' : '') + timeAgo(p.orderedAt) + (p.orderedBy ? ' · ' + esc(shortUser(p.orderedBy)) : '') + '</div></div>';
           html += '<div class="pedido-side" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">';
           html += '<button class="recv-btn" data-receive="' + p.id + '">📦 Recibido</button>';
           html += '<button class="undo-btn" data-unorder="' + p.id + '">deshacer</button>';
@@ -873,19 +1013,6 @@
       });
     }
     return html;
-  }
-
-  function buildPedidoText(prov){
-    var items = Store.products.filter(function(p){
-      var s = statusOf(p);
-      return (p.provider||"Sin proveedor") === prov && (s==="urgent" || s==="pronto");
-    });
-    var lines = ["Pedido para " + prov + ":"];
-    items.forEach(function(p){
-      var qty = Math.max(Number(p.max) - Number(p.current), 0);
-      lines.push("- " + p.name + ": " + fmtNum(qty) + " " + p.unit);
-    });
-    return lines.join("\n");
   }
 
   /* ---- Proveedores ---- */
@@ -903,6 +1030,7 @@
         if(v.orderDays && v.orderDays.length) html += '<div class="prov-line">Toma pedidos: ' + v.orderDays.map(shortDay).join(', ') + '</div>';
         if(v.deliveryDays && v.deliveryDays.length) html += '<div class="prov-line">Entrega: ' + v.deliveryDays.map(shortDay).join(', ') + '</div>';
         if(v.minOrder) html += '<div class="prov-line">Pedido mínimo: ' + esc(v.minOrder) + '</div>';
+        if(v.paymentTerms) html += '<div class="prov-line">Pago: ' + esc(payLabel(v.paymentTerms)) + '</div>';
         if(v.updatedBy) html += '<div class="prov-line faint">Última edición: ' + esc(shortUser(v.updatedBy)) + ' · ' + timeAgo(v.updatedAt) + '</div>';
         html += '</div>';
       });
@@ -919,11 +1047,12 @@
       return '<label class="day-chip"><input type="checkbox" name="' + fieldName + '" value="' + d + '"' + checked + '><span>' + shortDay(d) + '</span></label>';
     }).join('');
   }
-  function openModal(innerHtml){
+  function openModal(innerHtml, opts){
+    opts = opts || {};
     var ov = document.createElement("div");
-    ov.className = "overlay";
+    ov.className = "overlay" + (opts.full ? " full" : "");
     ov.id = "modal-overlay";
-    ov.innerHTML = '<div class="sheet">' + innerHtml + '</div>';
+    ov.innerHTML = '<div class="sheet' + (opts.full ? ' full' : '') + '">' + innerHtml + '</div>';
     ov.addEventListener("click", function(e){ if(e.target === ov) closeModal(); });
     document.body.appendChild(ov);
   }
@@ -946,6 +1075,10 @@
     html += '<div class="field-row"><div class="field"><label>Stock mínimo</label><input id="f-min" type="number" value="' + fmtNum(p.min) + '"></div>';
     html += '<div class="field"><label>Stock máximo</label><input id="f-max" type="number" value="' + fmtNum(p.max) + '"></div></div>';
     html += '<div class="field"><label>Stock actual</label><input id="f-current" type="number" value="' + fmtNum(p.current) + '"></div>';
+    html += '<div style="font-size:12.5px;font-weight:700;color:var(--text-muted);margin:16px 0 8px;">Cómo se compra (para la nota de pedido)</div>';
+    html += '<div class="field-row"><div class="field"><label>Se compra por</label><input id="f-buytype" list="type-list" autocomplete="off" placeholder="botella, caja…" value="' + esc(p.buyType || "") + '"></div>' +
+      '<div class="field"><label>Contenido (en ' + esc(p.unit || "unidad base") + ')</label><input id="f-packsize" type="number" step="any" min="0" placeholder="Ej: 750" value="' + (p.packSize ? esc(p.packSize) : "") + '"></div></div>';
+    html += '<div class="field"><label>Último precio por presentación ($)</label><input id="f-lastprice" type="number" step="any" min="0" value="' + (p.lastPrice != null && p.lastPrice !== "" ? esc(p.lastPrice) : "") + '"></div>' + typeDatalist();
     html += '<div class="sheet-actions">';
     html += '<button class="btn btn-primary btn-block" id="save-product">Guardar</button>';
     html += '</div>';
@@ -957,8 +1090,15 @@
     document.getElementById("save-product").onclick = function(){
       var name = document.getElementById("f-name").value.trim();
       if(!name){ showToast("El nombre es obligatorio"); return; }
+      var buyType = document.getElementById("f-buytype").value.trim();
+      var packSize = Number(document.getElementById("f-packsize").value) || 0;
+      var lastPriceRaw = document.getElementById("f-lastprice").value;
+      if(packSize > 0 && !buyType){ showToast("Indicá cómo se compra (botella, caja…) para usar el contenido"); return; }
       var data = {
         name: name,
+        buyType: buyType || null,
+        packSize: packSize > 0 ? packSize : null,
+        lastPrice: lastPriceRaw === "" ? null : Number(lastPriceRaw),
         category: document.getElementById("f-category").value.trim() || "SIN CATEGORÍA",
         provider: document.getElementById("f-provider").value.trim(),
         unit: document.getElementById("f-unit").value.trim(),
@@ -982,6 +1122,320 @@
     }
   }
 
+  /* ============ NOTA DE PEDIDO ============ */
+  function lineSub(l){
+    var q = Number(l.qty), pr = l.price;
+    if(l.qty === "" || isNaN(q) || pr === null || pr === undefined || pr === "" || isNaN(Number(pr))) return null;
+    return round2(q * Number(pr));
+  }
+
+  // Valores iniciales de un renglón, tomados de la base (todo se puede cambiar en la pantalla)
+  function defaultLine(p){
+    var falta = Math.max((Number(p.max)||0) - (Number(p.current)||0), 0);
+    var size = Number(p.packSize) || 0;
+    var bt = (p.buyType || "").trim();
+    var type, qty;
+    if(!bt || normUnit(bt) === normUnit(p.unit)){ type = p.unit || "pieza"; qty = round2(falta); }
+    else if(size > 0){ type = bt; qty = Math.ceil(falta / size); }
+    else { type = bt; qty = ""; } // se compra en otra presentación y no sabemos el contenido: que lo cargue la persona
+    var price = (bt && normUnit(bt) === normUnit(type) && p.lastPrice != null && p.lastPrice !== "") ? Number(p.lastPrice) : null;
+    return {
+      id: p.id, name: p.name, unit: p.unit, type: type, qty: qty, price: price,
+      hint: "Faltan " + fmtQty(falta) + " " + (p.unit || "") + " · actual " + fmtQty(p.current) + " · máx " + fmtQty(p.max)
+    };
+  }
+
+  function notaPaperHtml(o){
+    var hasPrice = o.items.some(function(it){ return it.price != null; });
+    var h = '<div class="nota-paper">';
+    if(o.status === "anulada") h += '<div class="nota-void">NOTA ANULADA</div>';
+    h += '<div class="nota-head"><div><div class="nota-title">Nota de pedido</div><div class="nota-biz">' + esc(BUSINESS_NAME) + '</div></div>' +
+      '<div class="nota-folio">' + esc(o.folio) + '<small>' + fmtDMY(orderDateObj(o)) + '</small></div></div>';
+    h += '<div class="nota-meta">' +
+      '<div><span>Proveedor</span><b>' + esc(o.provider) + '</b></div>' +
+      '<div><span>Fecha</span><b>' + esc(fmtDayDate(ymd(orderDateObj(o)))) + '</b></div>' +
+      '<div><span>Forma de pago</span><b>' + esc(payLabel(o.paymentTerms)) + '</b></div>' +
+      '<div><span>Solicita</span><b>' + esc(orderRequester(o)) + '</b></div></div>';
+    h += '<table class="nota-table"><thead><tr><th>Producto</th><th class="num">Cantidad</th>' +
+      (hasPrice ? '<th class="num">P. unit.</th><th class="num">Importe</th>' : '') + '</tr></thead><tbody>';
+    o.items.forEach(function(it){
+      h += '<tr><td>' + esc(it.name) + '</td><td class="num"><b>' + fmtQty(it.qty) + '</b> ' + esc(it.type) + '</td>' +
+        (hasPrice ? '<td class="num">' + (it.price != null ? money(it.price) : '—') + '</td><td class="num">' + (it.subtotal != null ? money(it.subtotal) : '—') + '</td>' : '') + '</tr>';
+    });
+    h += '</tbody></table>';
+    if(hasPrice){
+      h += '<div class="nota-total"><span>Total' + (o.missingPrices ? ' (parcial)' : '') + '</span><span>' + money(o.total) + '</span></div>';
+      if(o.missingPrices) h += '<div style="font-size:11.5px;color:#666;">Hay ' + o.missingPrices + ' producto(s) sin precio cargado.</div>';
+    }
+    if(o.paymentTerms === "anticipado") h += '<div class="nota-pay">PAGO ANTICIPADO' + (hasPrice ? ' — A pagar: ' + money(o.total) : '') + '</div>';
+    else h += '<div class="nota-pay soft">' + esc(payLabel(o.paymentTerms)) + '</div>';
+    if(o.notes) h += '<div class="nota-notes"><b>Observaciones:</b> ' + esc(o.notes) + '</div>';
+    return h + '</div>';
+  }
+
+  function orderText(o){
+    var L = [];
+    L.push("NOTA DE PEDIDO " + o.folio);
+    L.push(BUSINESS_NAME + " · " + fmtDMY(orderDateObj(o)));
+    L.push("Proveedor: " + o.provider);
+    if(o.deliveryDate) L.push("Entrega: " + fmtDayDate(o.deliveryDate));
+    L.push("Pago: " + payLabel(o.paymentTerms));
+    L.push("");
+    o.items.forEach(function(it, i){
+      var line = (i+1) + ". " + it.name + " — " + fmtQty(it.qty) + " " + it.type;
+      if(it.price != null) line += " × " + money(it.price) + " = " + money(it.subtotal);
+      L.push(line);
+    });
+    L.push("");
+    if(o.items.some(function(it){ return it.price != null; })){
+      L.push("TOTAL: " + money(o.total) + (o.missingPrices ? " (parcial, faltan precios)" : ""));
+    }
+    if(o.paymentTerms === "anticipado") L.push("** PAGO ANTICIPADO **");
+    if(o.notes) L.push("Obs: " + o.notes);
+    L.push("Solicita: " + orderRequester(o));
+    return L.join("\n");
+  }
+
+  function waLink(phone, text){
+    var digits = (phone || "").replace(/\D/g, "");
+    if(digits.length === 10) digits = DEFAULT_COUNTRY_CODE + digits;
+    return "https://wa.me/" + (digits.length >= 11 ? digits : "") + "?text=" + encodeURIComponent(text);
+  }
+
+  function copyText(text, msg){
+    var done = function(){ showToast(msg || "Copiado"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+
+  function printOrder(o){
+    var root = document.getElementById("print-root");
+    if(!root){ root = document.createElement("div"); root.id = "print-root"; document.body.appendChild(root); }
+    root.innerHTML = notaPaperHtml(o);
+    var cleanup = function(){ root.innerHTML = ""; window.removeEventListener("afterprint", cleanup); };
+    window.addEventListener("afterprint", cleanup);
+    window.print();
+  }
+
+  function typeDatalist(){
+    return '<datalist id="type-list">' + TYPE_SUGGESTIONS.map(function(t){ return '<option value="' + esc(t) + '">'; }).join('') + '</datalist>';
+  }
+
+  function notaLineHtml(l){
+    return '<div class="nl" data-line="' + esc(l.id) + '">' +
+      '<div class="nl-top"><div><div style="font-weight:600;">' + esc(l.name) + '</div><div class="faint" style="font-size:12px;">' + esc(l.hint) + '</div></div>' +
+      '<button class="nl-x" data-nl-remove="' + esc(l.id) + '" aria-label="Quitar de la nota">✕</button></div>' +
+      '<div class="nl-fields">' +
+        '<label>Cantidad<input type="number" inputmode="decimal" min="0" step="any" data-nl="qty" value="' + (l.qty === "" ? "" : esc(round2(l.qty))) + '"></label>' +
+        '<label>Tipo<input list="type-list" data-nl="type" autocomplete="off" value="' + esc(l.type) + '"></label>' +
+        '<label>Precio unit. $<input type="number" inputmode="decimal" min="0" step="any" data-nl="price" value="' + (l.price == null ? "" : esc(l.price)) + '"></label>' +
+      '</div><div class="nl-sub">Importe: <b data-nl-sub="' + esc(l.id) + '">—</b></div></div>';
+  }
+
+  function notaEditModal(prov){
+    var items = Store.products.filter(function(p){
+      var s = statusOf(p);
+      return (p.provider || "Sin proveedor") === prov && (s === "urgent" || s === "pronto") && !State.orderUnchecked[p.id];
+    });
+    if(items.length === 0){ showToast("Tildá al menos un producto para armar la nota"); return; }
+    var provData = Store.providers.find(function(v){ return v.name === prov; }) || null;
+    var lines = items.map(defaultLine);
+
+    var html = '<button class="close-x" data-close>✕</button>';
+    html += '<div class="sheet-title">Nota de pedido</div>';
+    html += '<div class="faint" style="font-size:12.5px;margin:-6px 0 14px;">' + esc(prov) + ' · los datos vienen del stock; podés cambiar cantidad, tipo y precio.</div>';
+    html += '<div class="field-row"><div class="field"><label>Forma de pago</label><select id="n-terms">' + payOptionsHtml((provData && provData.paymentTerms) || "contraentrega") + '</select></div>' +
+      '<div class="field"><label>Fecha de la nota</label><input type="date" id="n-date" value="' + ymd(new Date()) + '"></div></div>';
+    html += '<div class="field"><label>Solicita</label><input type="text" id="n-req" maxlength="40" value="' + esc(shortUser(CurrentUser)) + '" placeholder="Nombre de quien pide"></div>';
+    html += '<div id="n-lines">' + lines.map(notaLineHtml).join('') + '</div>' + typeDatalist();
+    html += '<div class="field"><label>Observaciones (opcional)</label><textarea id="n-notes" rows="2" placeholder="Ej: entregar por la puerta de atrás"></textarea></div>';
+    html += '<label class="day-chip" style="margin-bottom:12px;"><input type="checkbox" id="n-mark" checked><span>Marcar estos productos como “En camino”</span></label>';
+    html += '<div id="n-total" style="font-size:15px;margin:6px 0 4px;"></div>';
+    html += '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="n-generate">Generar nota</button></div>';
+    openModal(html, { full: true });
+
+    var wrap = document.getElementById("n-lines");
+    var totalEl = document.getElementById("n-total");
+    var genBtn = document.getElementById("n-generate");
+    function findLine(id){ return lines.find(function(l){ return l.id === id; }); }
+    function recalc(){
+      var tot = 0, withPrice = 0;
+      lines.forEach(function(l){
+        var s = lineSub(l);
+        var el = wrap.querySelector('[data-nl-sub="' + l.id + '"]');
+        if(el) el.textContent = s == null ? "—" : money(s);
+        if(s != null){ tot += s; withPrice++; }
+      });
+      if(lines.length === 0) totalEl.textContent = "";
+      else if(withPrice === 0) totalEl.innerHTML = '<span class="faint">Cargá los precios para ver el total.</span>';
+      else totalEl.innerHTML = 'Total: <b>' + money(tot) + '</b>' + (withPrice < lines.length ? ' <span class="faint">(' + (lines.length - withPrice) + ' sin precio)</span>' : '');
+      genBtn.disabled = lines.length === 0;
+    }
+    wrap.addEventListener("input", function(e){
+      var t = e.target;
+      if(!t.dataset || !t.dataset.nl) return;
+      var l = findLine(t.closest(".nl").dataset.line);
+      if(!l) return;
+      if(t.dataset.nl === "qty") l.qty = t.value === "" ? "" : Number(t.value);
+      else if(t.dataset.nl === "type") l.type = t.value;
+      else l.price = t.value === "" ? null : Number(t.value);
+      recalc();
+    });
+    wrap.addEventListener("click", function(e){
+      var b = e.target.closest && e.target.closest("[data-nl-remove]");
+      if(!b) return;
+      var id = b.dataset.nlRemove;
+      lines = lines.filter(function(l){ return l.id !== id; });
+      var node = b.closest(".nl"); if(node) node.remove();
+      recalc();
+    });
+    recalc();
+
+    genBtn.onclick = async function(){
+      for(var i = 0; i < lines.length; i++){
+        var q = Number(lines[i].qty);
+        if(lines[i].qty === "" || isNaN(q) || q <= 0){ showToast("Revisá la cantidad de " + lines[i].name); return; }
+        if(!String(lines[i].type || "").trim()){ showToast("Indicá el tipo (botella, caja…) de " + lines[i].name); return; }
+      }
+      genBtn.disabled = true; genBtn.textContent = "Generando…";
+      try {
+        var folio = await Store.nextFolio();
+        var iso = new Date().toISOString();
+        var itemsOut = lines.map(function(l){
+          var price = (l.price === null || l.price === "" || isNaN(Number(l.price))) ? null : Number(l.price);
+          var qty = round2(l.qty);
+          return { productId: l.id, name: l.name, qty: qty, type: String(l.type).trim(), price: price, subtotal: price == null ? null : round2(qty * price) };
+        });
+        var total = 0, missing = 0;
+        itemsOut.forEach(function(it){ if(it.subtotal == null) missing++; else total += it.subtotal; });
+        var order = {
+          folio: folio, createdAt: iso, createdBy: CurrentUser || null,
+          noteDate: document.getElementById("n-date").value || ymd(new Date()),
+          requestedBy: document.getElementById("n-req").value.trim() || shortUser(CurrentUser),
+          provider: prov, providerPhone: (provData && provData.phone) || "",
+          paymentTerms: document.getElementById("n-terms").value,
+          deliveryDate: "",
+          notes: document.getElementById("n-notes").value.trim(),
+          items: itemsOut, total: round2(total), missingPrices: missing,
+          status: "activa", paid: false, paidAt: null, paidBy: null
+        };
+        var mark = document.getElementById("n-mark").checked;
+        var id = await Store.createOrder(order);
+
+        itemsOut.forEach(function(it){
+          var p = Store.products.find(function(x){ return x.id === it.productId; });
+          if(!p) return;
+          var upd = {};
+          if(it.price != null){ upd.lastPrice = it.price; upd.buyType = it.type; }
+          if(mark){
+            var bt = upd.buyType || p.buyType;
+            var base = null;
+            if(normUnit(it.type) === normUnit(p.unit)) base = it.qty;
+            else if(Number(p.packSize) > 0 && bt && normUnit(it.type) === normUnit(bt)) base = round2(it.qty * Number(p.packSize));
+            upd.ordered = true; upd.orderedQty = base; upd.orderedLabel = fmtQty(it.qty) + " " + it.type;
+            upd.orderedFolio = folio; upd.orderedAt = iso; upd.orderedBy = CurrentUser || null;
+            delete State.orderUnchecked[p.id];
+          }
+          if(Object.keys(upd).length) Store.updateProduct(p.id, upd);
+        });
+        closeModal();
+        fullRenderWithFab();
+        orderViewModal(id);
+        showToast("Nota " + folio + " generada");
+      } catch(e){
+        console.error(e);
+        showToast("No se pudo guardar la nota. Revisá tu conexión y probá de nuevo.");
+        genBtn.disabled = false; genBtn.textContent = "Generar nota";
+      }
+    };
+  }
+
+  function orderViewModal(id){
+    var o = Store.orders.find(function(x){ return x.id === id; });
+    if(!o){ showToast("No se encontró la nota"); return; }
+    var st = o.status === "anulada" ? ["urgent","Anulada"] : (o.paid ? ["ok","Pagada"] : ["pronto","Por pagar"]);
+    var html = '<button class="close-x" data-close>✕</button>';
+    html += '<div class="sheet-title">' + esc(o.folio) + ' <span class="badge ' + st[0] + '" style="vertical-align:middle;">' + st[1] + '</span></div>';
+    html += notaPaperHtml(o);
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">' +
+      '<button class="btn btn-secondary" id="o-copy">Copiar texto</button>' +
+      '<button class="btn btn-secondary" id="o-wa">Enviar por WhatsApp</button>' +
+      '<button class="btn btn-secondary" id="o-print" style="grid-column:1 / -1;">Imprimir / guardar PDF</button></div>';
+    if(o.status !== "anulada"){
+      html += '<button class="btn ' + (o.paid ? 'btn-secondary' : 'btn-primary') + ' btn-block" id="o-pay" style="margin-top:12px;">' + (o.paid ? 'Marcar como no pagada' : 'Marcar como pagada') + '</button>';
+      html += '<button class="btn btn-danger btn-block" id="o-void" style="margin-top:8px;">Anular nota</button>';
+    }
+    if(o.paid && o.paidAt) html += '<div class="faint" style="font-size:12px;margin-top:10px;text-align:center;">Pagada ' + timeAgo(o.paidAt) + (o.paidBy ? ' · ' + esc(shortUser(o.paidBy)) : '') + '</div>';
+    openModal(html, { full: true });
+
+    document.getElementById("o-copy").onclick = function(){ copyText(orderText(o), "Nota copiada"); };
+    document.getElementById("o-wa").onclick = function(){ window.open(waLink(o.providerPhone, orderText(o)), "_blank"); };
+    document.getElementById("o-print").onclick = function(){ printOrder(o); };
+    var payBtn = document.getElementById("o-pay");
+    if(payBtn) payBtn.onclick = async function(){
+      var nowPaid = !o.paid;
+      await Store.updateOrder(id, nowPaid ? { paid: true, paidAt: new Date().toISOString(), paidBy: CurrentUser || null } : { paid: false, paidAt: null, paidBy: null });
+      closeModal(); fullRenderWithFab();
+      showToast(nowPaid ? "Nota marcada como pagada" : "Nota marcada como no pagada");
+    };
+    var voidBtn = document.getElementById("o-void");
+    if(voidBtn) voidBtn.onclick = async function(){
+      if(!confirm("¿Anular la nota " + o.folio + "? Los productos que seguían “En camino” por esta nota vuelven a pendientes.")) return;
+      await Store.updateOrder(id, { status: "anulada", voidedAt: new Date().toISOString(), voidedBy: CurrentUser || null });
+      Store.products.filter(function(p){ return p.ordered && p.orderedFolio === o.folio; }).forEach(function(p){
+        Store.updateProduct(p.id, { ordered: false, orderedQty: null, orderedAt: null, orderedBy: null, orderedLabel: null, orderedFolio: null });
+      });
+      closeModal(); fullRenderWithFab();
+      showToast("Nota anulada");
+    };
+  }
+
+  function pedidosHeadHtml(){
+    var unpaid = Store.orders.filter(function(o){ return o.status !== "anulada" && !o.paid; }).length;
+    var v = State.pedidosView;
+    return '<div class="chips" style="padding:12px 0 6px;">' +
+      '<button class="chip ' + (v !== "notas" ? 'active' : '') + '" data-pview="pendientes">Por pedir</button>' +
+      '<button class="chip ' + (v === "notas" ? 'active' : '') + '" data-pview="notas">Notas de pedido' + (unpaid ? '<span class="chip-count">' + unpaid + ' por pagar</span>' : '') + '</button></div>';
+  }
+
+  function notasHtml(){
+    var all = Store.orders.slice().sort(function(a,b){ return String(b.createdAt).localeCompare(String(a.createdAt)); });
+    var unpaid = all.filter(function(o){ return o.status !== "anulada" && !o.paid; });
+    var sum = function(list){ return list.reduce(function(t,o){ return t + (Number(o.total) || 0); }, 0); };
+    var antic = unpaid.filter(function(o){ return o.paymentTerms === "anticipado"; });
+    var f = State.notasFilter;
+    var list = all.filter(function(o){
+      if(f === "unpaid") return o.status !== "anulada" && !o.paid;
+      if(f === "paid") return o.status !== "anulada" && o.paid;
+      return true;
+    });
+
+    var html = '<div class="card" style="margin:6px 0 4px;">' +
+      '<div class="faint" style="font-size:12px;">Por pagar</div>' +
+      '<div class="stat-num" id="notas-total" style="font-size:26px;">' + money(sum(unpaid)) + '</div>' +
+      '<div class="faint" style="font-size:12.5px;margin-top:6px;">' + unpaid.length + ' nota' + (unpaid.length === 1 ? '' : 's') +
+      (antic.length ? ' · <b style="color:var(--camino);">' + money(sum(antic)) + ' de pago anticipado</b> (' + antic.length + ')' : '') + '</div></div>';
+    html += '<div class="chips" style="padding:10px 0 8px;">' +
+      [["unpaid","Por pagar"],["paid","Pagadas"],["all","Todas"]].map(function(o){
+        return '<button class="chip ' + (f === o[0] ? 'active' : '') + '" data-nfilter="' + o[0] + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
+
+    var resetBtn = all.length ? '<div style="text-align:center;margin:26px 0 8px;"><button class="undo-btn" data-reset-notas style="font-size:12.5px;">Borrar todas las notas y reiniciar numeración</button></div>' : '';
+    if(list.length === 0){
+      return html + '<div class="empty-note">' + (all.length === 0 ? 'Todavía no hay notas.<br>Armá una desde “Por pedir” con el botón Nota de pedido.' : 'No hay notas en esta vista.') + '</div>' + resetBtn;
+    }
+    list.forEach(function(o){
+      var st = o.status === "anulada" ? ["urgent","Anulada"] : (o.paid ? ["ok","Pagada"] : ["pronto","Por pagar"]);
+      var hasPrice = o.items.some(function(it){ return it.price != null; });
+      html += '<div class="prov-card" data-open-order="' + esc(o.id) + '"' + (o.status === "anulada" ? ' style="opacity:.55;"' : '') + '>' +
+        '<div class="prov-top"><span class="prov-name">' + esc(o.folio) + ' · ' + esc(o.provider) + '</span><span class="badge ' + st[0] + '">' + st[1] + '</span></div>' +
+        '<div class="prov-line">' + fmtDMY(orderDateObj(o)) + ' · ' + esc(payLabel(o.paymentTerms)) + (hasPrice ? ' · <b style="color:var(--text);">' + money(o.total) + '</b>' : ' · sin precios') + '</div>' +
+        '<div class="prov-line faint">' + o.items.length + ' producto' + (o.items.length === 1 ? '' : 's') + (o.deliveryDate ? ' · entrega ' + esc(fmtDayDate(o.deliveryDate)) : '') + '</div></div>';
+    });
+    return html + resetBtn;
+  }
+
   function receiveModal(id){
     var p = Store.products.find(function(x){ return x.id === id; });
     if(!p) return;
@@ -989,8 +1443,8 @@
     var html = '<button class="close-x" data-close>✕</button>';
     html += '<div class="sheet-title">Recibir pedido</div>';
     html += '<div style="font-size:15px;font-weight:600;">' + esc(p.name) + '</div>';
-    html += '<div class="faint" style="font-size:12.5px;margin:3px 0 16px;">' + esc(p.provider||'—') + ' · Stock actual ' + fmtNum(p.current) + ' ' + esc(p.unit) + (expected ? ' · Pedido +' + fmtNum(expected) : '') + '</div>';
-    html += '<div class="field"><label>¿Cuántas unidades llegaron?</label><input id="f-recv" type="number" inputmode="decimal" min="0" value="' + (expected ? fmtNum(expected) : '') + '"></div>';
+    html += '<div class="faint" style="font-size:12.5px;margin:3px 0 16px;">' + esc(p.provider||'—') + ' · Stock actual ' + fmtNum(p.current) + ' ' + esc(p.unit) + (p.orderedLabel ? ' · Pedido ' + esc(p.orderedLabel) : (expected ? ' · Pedido +' + fmtNum(expected) : '')) + '</div>';
+    html += '<div class="field"><label>¿Cuánto llegó? (en ' + esc(p.unit || 'unidades') + ')</label><input id="f-recv" type="number" inputmode="decimal" min="0" value="' + (expected ? fmtNum(expected) : '') + '"></div>';
     html += '<div id="recv-preview" class="muted" style="font-size:13px;min-height:18px;"></div>';
     html += '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="confirm-recv">Confirmar recepción</button></div>';
     openModal(html);
@@ -1015,7 +1469,7 @@
       var newCur = round2((Number(fresh.current)||0) + qty);
       Store.updateProduct(id, {
         current: newCur,
-        ordered: false, orderedQty: null, orderedAt: null, orderedBy: null,
+        ordered: false, orderedQty: null, orderedAt: null, orderedBy: null, orderedLabel: null, orderedFolio: null,
         updatedAt: new Date().toISOString(), updatedBy: CurrentUser || null
       });
       closeModal();
@@ -1038,6 +1492,7 @@
     html += '<div class="field"><label>Días que toma pedidos</label><div class="day-group">' + dayCheckboxes("orderDays", v.orderDays) + '</div></div>';
     html += '<div class="field"><label>Días que entrega</label><div class="day-group">' + dayCheckboxes("deliveryDays", v.deliveryDays) + '</div></div>';
     html += '<div class="field"><label>Pedido mínimo</label><input id="f-pmin" value="' + esc(v.minOrder) + '"></div>';
+    html += '<div class="field"><label>Forma de pago habitual</label><select id="f-pterms">' + payOptionsHtml(v.paymentTerms || "contraentrega") + '</select></div>';
     html += '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="save-provider">Guardar</button></div>';
     if(!isNew){
       html += '<button class="btn btn-danger btn-block" id="delete-provider" style="margin-top:8px;">Eliminar proveedor</button>';
@@ -1057,6 +1512,7 @@
         orderDays: orderDays,
         deliveryDays: deliveryDays,
         minOrder: document.getElementById("f-pmin").value.trim(),
+        paymentTerms: document.getElementById("f-pterms").value,
         updatedBy: CurrentUser || null,
         updatedAt: new Date().toISOString()
       };
@@ -1181,7 +1637,7 @@
           if(!prod) return;
           var qty = Math.max((Number(prod.max)||0) - (Number(prod.current)||0), 0);
           delete State.orderUnchecked[id];
-          Store.updateProduct(id, { ordered: true, orderedQty: qty, orderedAt: iso, orderedBy: CurrentUser || null });
+          Store.updateProduct(id, { ordered: true, orderedQty: qty, orderedAt: iso, orderedBy: CurrentUser || null, orderedLabel: null, orderedFolio: null });
         });
         fullRenderWithFab();
         showToast(ids.length + (ids.length === 1 ? " producto marcado" : " productos marcados") + " como pedido");
@@ -1194,28 +1650,36 @@
 
     document.querySelectorAll("[data-unorder]").forEach(function(btn){
       btn.addEventListener("click", function(){
-        Store.updateProduct(btn.dataset.unorder, { ordered: false, orderedQty: null, orderedAt: null, orderedBy: null });
+        Store.updateProduct(btn.dataset.unorder, { ordered: false, orderedQty: null, orderedAt: null, orderedBy: null, orderedLabel: null, orderedFolio: null });
         fullRenderWithFab();
         showToast("Se quitó la marca \"En camino\"");
       });
     });
 
+    document.querySelectorAll("[data-pview]").forEach(function(btn){
+      btn.addEventListener("click", function(){ State.pedidosView = btn.dataset.pview; fullRenderWithFab(); });
+    });
+    document.querySelectorAll("[data-nota-provider]").forEach(function(btn){
+      btn.addEventListener("click", function(){ notaEditModal(btn.dataset.notaProvider); });
+    });
+    document.querySelectorAll("[data-nfilter]").forEach(function(btn){
+      btn.addEventListener("click", function(){ State.notasFilter = btn.dataset.nfilter; fullRenderWithFab(); });
+    });
+    var rst = document.querySelector("[data-reset-notas]");
+    if(rst) rst.addEventListener("click", async function(){
+      if(!confirm("¿Borrar TODAS las notas de pedido y volver la numeración a NP-0001?\n\nSe pierde el historial de notas (útil para borrar pruebas). Los productos que seguían “En camino” por una nota vuelven a pendientes.")) return;
+      if(!confirm("Última confirmación: esto no se puede deshacer. ¿Continuar?")) return;
+      try { await Store.resetOrders(); showToast("Notas borradas. La próxima será NP-0001"); }
+      catch(e){ console.error(e); showToast("No se pudo reiniciar. Probá de nuevo"); }
+      fullRenderWithFab();
+    });
+    document.querySelectorAll("[data-open-order]").forEach(function(card){
+      card.addEventListener("click", function(){ orderViewModal(card.dataset.openOrder); });
+    });
+
     var addProvBtn = document.getElementById("add-provider-btn");
     if(addProvBtn) addProvBtn.addEventListener("click", function(){ editProviderModal(null); });
 
-    document.querySelectorAll("[data-copy-provider]").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        var text = buildPedidoText(btn.dataset.copyProvider);
-        var done = function(){
-          btn.textContent = "Copiado ✓";
-          btn.classList.add("copied");
-          setTimeout(function(){ btn.textContent = "Copiar pedido"; btn.classList.remove("copied"); }, 1600);
-        };
-        if(navigator.clipboard && navigator.clipboard.writeText){
-          navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text); done(); });
-        } else { fallbackCopy(text); done(); }
-      });
-    });
   }
 
   function fallbackCopy(text){
@@ -1263,7 +1727,7 @@
   function renderLoginForm(){
     var card = document.getElementById("login-card");
     card.innerHTML =
-      '<h1 class="brand">Barra <span>Stock</span></h1>' +
+      '<h1 class="brand">Monono <span>Stock</span></h1>' +
       '<div class="brand-sub">Iniciá sesión para continuar</div>' +
       '<div id="login-error" class="login-error" style="display:none;"></div>' +
       '<div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username"></div>' +
@@ -1293,7 +1757,7 @@
   function renderConfigMissing(){
     var card = document.getElementById("login-card");
     card.innerHTML =
-      '<h1 class="brand">Barra <span>Stock</span></h1>' +
+      '<h1 class="brand">Monono <span>Stock</span></h1>' +
       '<div class="brand-sub">Falta configuración</div>' +
       '<p class="muted" style="font-size:13.5px;line-height:1.5;margin-top:6px;">' +
       'Todavía no completaste <code>firebase-config.js</code> con las claves de tu proyecto de Firebase. ' +
